@@ -1,2 +1,0 @@
-
--DCATKIN_DEVEL_PREFIX=/home/cncdev/maximo_coding_test/devel -DCMAKE_INSTALL_PREFIX=/home/cncdev/maximo_coding_test/install -G Unix Makefiles
