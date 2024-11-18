@@ -7,7 +7,7 @@ Explorer::Explorer(ros::NodeHandle& nh)
       fiducial_sub_(nh.subscribe("/fiducial_transforms", 100, &Explorer::arucoCallback, this)),
       sar_bot_(nh_, "explorer", MoveGoal{-4.0, 2.5, 1.0}, [this](){return this->goalReachedCB();})
 {
-    // sar_bot_ = std::make_unique<SARBot>(nh_, "explorer", MoveGoal{-4.0, 2.5, 1.0}, [this](){return goalReachedCB();});
+    follower_client_ = nh_.serviceClient<maximo_coding_test::FollowerGoals>("follower_goals");
 }
 
 bool Explorer::init(std::string param_base, int num_markers) {
@@ -34,11 +34,14 @@ void Explorer::spin() {
         }
 
         if(sar_bot_.isFinished()) {
-            std::reverse(follower_goals_.begin(), follower_goals_.end());
+            std::reverse(follower_goals_.goals.begin(), follower_goals_.goals.end());
             
             ROS_INFO("Exploration complete. Sending Follower");
-            // send service call
-            ROS_INFO("Follower goals size: %ld", follower_goals_.size());
+
+            maximo_coding_test::FollowerGoalsResponse res;
+            if (!follower_client_.call(follower_goals_, res)) {
+                ROS_ERROR("Failed to call follower service");
+            }
 
             break;
         }
@@ -49,38 +52,6 @@ void Explorer::spin() {
     }
 
     return;
-}
-
-void Explorer::goalReachedCB() 
-{
-    geometry_msgs::Twist cmd_vel_msg;
-    cmd_vel_msg.angular.z = 0.1;
-    explorer_vel_pub_.publish(cmd_vel_msg);
-
-    geometry_msgs::TransformStamped trans;
-    while(!listen("marker_frame", trans)) {
-        ROS_INFO("Waiting for marker_frame");
-    }
-
-    cmd_vel_msg.angular.z = 0;
-    explorer_vel_pub_.publish(cmd_vel_msg);
-    follower_goals_.push_back(
-        MoveGoal{trans.transform.translation.x, trans.transform.translation.y, trans.transform.rotation.w}
-    );
-}
-
-bool Explorer::listen(std::string frame, geometry_msgs::TransformStamped &transformStamped) 
-{
-    try {
-        transformStamped = tf_buffer_.lookupTransform("map", frame, ros::Time(0));\
-        return true;
-    }
-    catch (tf2::TransformException& ex) {
-        ROS_WARN("%s", ex.what());
-        ros::Duration(1.0).sleep();
-    }
-
-    return false;
 }
 
 void Explorer::arucoCallback(const fiducial_msgs::FiducialTransformArray& fiducials) {
@@ -101,4 +72,34 @@ void Explorer::arucoCallback(const fiducial_msgs::FiducialTransformArray& fiduci
     // ROS_INFO("Broadcasting");
     br.sendTransform(transformStamped);
   }
+}
+
+void Explorer::goalReachedCB() 
+{
+    geometry_msgs::Twist cmd_vel_msg;
+    cmd_vel_msg.angular.z = 0.1;
+    explorer_vel_pub_.publish(cmd_vel_msg);
+
+    geometry_msgs::TransformStamped transform;
+    while(!listen("marker_frame", transform)) {
+        ROS_INFO("Waiting for marker_frame");
+    }
+
+    cmd_vel_msg.angular.z = 0;
+    explorer_vel_pub_.publish(cmd_vel_msg);
+    follower_goals_.goals.push_back(transform.transform);
+}
+
+bool Explorer::listen(std::string frame, geometry_msgs::TransformStamped &transformStamped) 
+{
+    try {
+        transformStamped = tf_buffer_.lookupTransform("map", frame, ros::Time(0));\
+        return true;
+    }
+    catch (tf2::TransformException& ex) {
+        ROS_WARN("%s", ex.what());
+        ros::Duration(1.0).sleep();
+    }
+
+    return false;
 }

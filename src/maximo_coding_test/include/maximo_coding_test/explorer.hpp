@@ -1,4 +1,5 @@
 #include "maximo_coding_test/sar_base.hpp"
+#include "maximo_coding_test/FollowerGoals.h"
 
 class Explorer {
 public:
@@ -11,9 +12,10 @@ private:
     void goalReachedCB();
     bool listen(std::string frame, geometry_msgs::TransformStamped &transformStamped);
     
-    std::vector<MoveGoal> follower_goals_;
+    maximo_coding_test::FollowerGoalsRequest follower_goals_;
     ros::NodeHandle nh_;
     ros::Publisher explorer_vel_pub_;
+    ros::ServiceClient follower_client_;
     ros::Subscriber fiducial_sub_;
     SARBot sar_bot_;
     tf2_ros::Buffer tf_buffer_;
