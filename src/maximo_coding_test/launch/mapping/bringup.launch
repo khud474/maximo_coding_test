@@ -1,11 +1,11 @@
 <launch>
-  <arg name="world_name" default="$(find final_project)/world/final_world.world" />
+  <arg name="world_name" default="$(find maximo_coding_test)/world/final_world.world" />
   <arg name="model" default="waffle" />
   <arg name="x" default="-4" />
   <arg name="y" default="2.5" />
   <arg name="yaw" default="0" />
   <arg name="start_rviz" default="true" />
-      <arg name="rviz_config" default="$(find final_project)/rviz/bringup.rviz" />
+      <arg name="rviz_config" default="$(find maximo_coding_test)/rviz/bringup.rviz" />
 
   <!-- Launch gazebo -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">

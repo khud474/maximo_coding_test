@@ -1,4 +1,4 @@
-# final_project
+# maximo_coding_test
 Non-complete package for the final project for: ENPM809Y Fall 2021
 
 - The `doc` folder contains the instructions.

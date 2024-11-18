@@ -80,57 +80,57 @@ void findFiducial(
 
 int main(int argc, char** argv)
 {
-  bool explorer_goal_sent = false;
-  bool follower_goal_sent = false;
+  // bool explorer_goal_sent = false;
+  // bool follower_goal_sent = false;
 
-  ros::init(argc, argv, "simple_navigation_goals");
-  ros::NodeHandle nh;
+  // ros::init(argc, argv, "simple_navigation_goals");
+  // ros::NodeHandle nh;
 
 
-  tf2_ros::Buffer tfBuffer;
-  tf2_ros::TransformListener tfListener(tfBuffer);
+  // tf2_ros::Buffer tfBuffer;
+  // tf2_ros::TransformListener tfListener(tfBuffer);
 
-  std::vector<move_base_msgs::MoveBaseGoal> explorer_goals;
-  std::vector<move_base_msgs::MoveBaseGoal> follower_goals;
+  // std::vector<move_base_msgs::MoveBaseGoal> explorer_goals;
+  // std::vector<move_base_msgs::MoveBaseGoal> follower_goals;
 
-  ros::Subscriber fiducail_sub = nh.subscribe("/fiducial_transforms", 100, arucoCallback);
-  ros::Publisher explorer_vel_pub = nh.advertise<geometry_msgs::Twist>("explorer/cmd_vel", 100);
+  // ros::Subscriber fiducail_sub = nh.subscribe("/fiducial_transforms", 100, arucoCallback);
+  // ros::Publisher explorer_vel_pub = nh.advertise<geometry_msgs::Twist>("explorer/cmd_vel", 100);
 
-  geometry_msgs::TransformStamped explorer_start_location;
-  while(!listen(tfBuffer, "explorer_tf/base_link", explorer_start_location)) {
-    ROS_INFO("Waiting for explorer start location");
-  }
+  // geometry_msgs::TransformStamped explorer_start_location;
+  // while(!listen(tfBuffer, "explorer_tf/base_link", explorer_start_location)) {
+  //   ROS_INFO("Waiting for explorer start location");
+  // }
 
-  explorer_goals.push_back(move_base_msgs::MoveBaseGoal{});
-  explorer_goals.back().target_pose.header.frame_id = "map";
-  explorer_goals.back().target_pose.header.stamp = ros::Time::now();
-  explorer_goals.back().target_pose.pose.position.x = explorer_start_location.transform.translation.x;
-  explorer_goals.back().target_pose.pose.position.y = explorer_start_location.transform.translation.y;
-  explorer_goals.back().target_pose.pose.orientation.w = explorer_start_location.transform.rotation.w;
+  // explorer_goals.push_back(move_base_msgs::MoveBaseGoal{});
+  // explorer_goals.back().target_pose.header.frame_id = "map";
+  // explorer_goals.back().target_pose.header.stamp = ros::Time::now();
+  // explorer_goals.back().target_pose.pose.position.x = explorer_start_location.transform.translation.x;
+  // explorer_goals.back().target_pose.pose.position.y = explorer_start_location.transform.translation.y;
+  // explorer_goals.back().target_pose.pose.orientation.w = explorer_start_location.transform.rotation.w;
 
-  geometry_msgs::TransformStamped follower_start_location;
-  while(!listen(tfBuffer, "follower_tf/base_link", follower_start_location)) {
-    ROS_INFO("Waiting for follower start location");
-  }
+  // geometry_msgs::TransformStamped follower_start_location;
+  // while(!listen(tfBuffer, "follower_tf/base_link", follower_start_location)) {
+  //   ROS_INFO("Waiting for follower start location");
+  // }
 
   // retrieve and store marker locations from paramter server
-  std::string explorer_location_param_base = "/aruco_lookup_locations/target_";
-  for (int i=4; i>=1; i--) {
-    std::vector<double> coords;
-    nh.getParam((explorer_location_param_base+std::to_string(i)), coords);
-    if (coords.size() != 2) {
-      ROS_FATAL("Parameter %s incorrect size.", (explorer_location_param_base+std::to_string(i)).c_str());
-      ros::shutdown();
-      return 1;
-    }
-    explorer_goals.push_back(move_base_msgs::MoveBaseGoal{});
-    explorer_goals.back().target_pose.header.frame_id = "map";
-    explorer_goals.back().target_pose.header.stamp = ros::Time::now();
-    explorer_goals.back().target_pose.pose.position.x = coords.at(0);
-    explorer_goals.back().target_pose.pose.position.y = coords.at(1);
-    explorer_goals.back().target_pose.pose.orientation.w = 1.0;
+  // std::string explorer_location_param_base = "/aruco_lookup_locations/target_";
+  // for (int i=4; i>=1; i--) {
+  //   std::vector<double> coords;
+  //   nh.getParam((explorer_location_param_base+std::to_string(i)), coords);
+  //   if (coords.size() != 2) {
+  //     ROS_FATAL("Parameter %s incorrect size.", (explorer_location_param_base+std::to_string(i)).c_str());
+  //     ros::shutdown();
+  //     return 1;
+  //   }
+  //   explorer_goals.push_back(move_base_msgs::MoveBaseGoal{});
+  //   explorer_goals.back().target_pose.header.frame_id = "map";
+  //   explorer_goals.back().target_pose.header.stamp = ros::Time::now();
+  //   explorer_goals.back().target_pose.pose.position.x = coords.at(0);
+  //   explorer_goals.back().target_pose.pose.position.y = coords.at(1);
+  //   explorer_goals.back().target_pose.pose.orientation.w = 1.0;
 
-  }
+  // }
 
   // tell the action client that we want to spin a thread by default
   MoveBaseClient explorer_client("/explorer/move_base", true);
