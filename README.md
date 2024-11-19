@@ -9,4 +9,4 @@ coding test for Maximo 11/17/2024
 - 'roslaunch maximo_coding_test multiple_robots.launch'
 - open a new terminal and cd to root dir of this project
 - 'source devel/setup.bash'
-- 'rosrun maximo_coding_test maximo_coding_test_explorer_node'
+- 'roslaunch maximo_coding_test start_sar_nodes.launch'

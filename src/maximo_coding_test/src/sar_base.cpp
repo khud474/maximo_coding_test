@@ -63,6 +63,9 @@ void SARBot::doneCb(const actionlib::SimpleClientGoalState& state, const move_ba
     if (state  == actionlib::SimpleClientGoalState::SUCCEEDED) {
         goals_.pop_back();
     }
+    else {
+        return;
+    }
 
     if(goal_reached_cb_ && goals_.size()) {
         goal_reached_cb_();

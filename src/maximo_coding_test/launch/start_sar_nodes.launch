@@ -1,0 +1,6 @@
+<launch>
+    <node name="maximo_coding_test_explorer_node" pkg="maximo_coding_test"
+     type="maximo_coding_test_explorer_node" respawn="false" output="screen" />
+    <node name="maximo_coding_test_follower_node" pkg="maximo_coding_test"
+     type="maximo_coding_test_follower_node" respawn="false" output="screen" />
+</launch>

@@ -11,15 +11,43 @@
 
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 
+/**
+ * Class that provides convenient wrapper for move_base action
+ */
 class SARBot {
 public:
+    /**
+    * SARBot constructor
+    * @param nh ros node handle
+    * @param name base name for move client
+    * @param start_location starting pose for robot
+    * @param goal_reached_cb user provided callback called when move goal completes successfully
+    */
     SARBot(ros::NodeHandle& nh, std::string name, geometry_msgs::Pose start_location, std::function<void(void)> goal_reached_cb);
+    /**
+    * getter for private goal_sent_ var
+    */
     bool isGoalRunning();
+    /**
+    * getter for private finished_
+    */
     bool isFinished();
+    /**
+    * sends next goal from stored goals_ vector to move server
+    */
     void sendNextGoal();
+    /**
+    * adds goal to goals_ vector
+    * @param goal pose to be added to goals_ vector 
+    */
     void setGoal(geometry_msgs::Pose goal);
 
 private:
+    /**
+    * called on move action return. on success removes goal from goals_ and calls user supplied callback
+    * @param state indicates success or failure of action call
+    * @param result returned result of move action call
+    */
     void doneCb(const actionlib::SimpleClientGoalState& state, const move_base_msgs::MoveBaseResultConstPtr& result);
 
     std::atomic<bool> goal_sent_;
