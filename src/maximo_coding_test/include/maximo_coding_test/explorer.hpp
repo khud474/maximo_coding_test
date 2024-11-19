@@ -1,3 +1,4 @@
+#include <geometry_msgs/Twist.h>
 #include "maximo_coding_test/sar_base.hpp"
 #include "maximo_coding_test/FollowerGoals.h"
 
@@ -17,7 +18,7 @@ private:
     ros::Publisher explorer_vel_pub_;
     ros::ServiceClient follower_client_;
     ros::Subscriber fiducial_sub_;
-    SARBot sar_bot_;
+    std::unique_ptr<SARBot> sar_bot_;
     tf2_ros::Buffer tf_buffer_;
     tf2_ros::TransformListener tf_listener_;
 

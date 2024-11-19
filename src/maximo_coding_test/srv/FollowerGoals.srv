@@ -1,4 +1,5 @@
-geometry_msgs/Transform[] goals
+geometry_msgs/Transform[] marker_frames
+geometry_msgs/Transform[] explorer_frames
 
 ---
 

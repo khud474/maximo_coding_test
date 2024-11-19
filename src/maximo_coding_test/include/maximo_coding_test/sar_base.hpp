@@ -1,7 +1,7 @@
 #include <actionlib/client/simple_action_client.h>
 #include <fiducial_msgs/FiducialTransformArray.h>
 #include <fiducial_msgs/FiducialTransform.h>
-#include <geometry_msgs/Twist.h>  //for geometry_msgs::Twist
+#include <geometry_msgs/Pose.h>
 #include <move_base_msgs/MoveBaseAction.h>
 #include <std_msgs/Empty.h>
 #include <tf2/LinearMath/Quaternion.h>
@@ -11,17 +11,13 @@
 
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 
-struct MoveGoal {
-    double x, y, w;
-};
-
 class SARBot {
 public:
-    SARBot(ros::NodeHandle& nh, std::string name, MoveGoal start_location, std::function<void(void)> goal_reached_cb);
+    SARBot(ros::NodeHandle& nh, std::string name, geometry_msgs::Pose start_location, std::function<void(void)> goal_reached_cb);
     bool isGoalRunning();
     bool isFinished();
     void sendNextGoal();
-    void setGoal(MoveGoal goal);
+    void setGoal(geometry_msgs::Pose goal);
 
 private:
     void doneCb(const actionlib::SimpleClientGoalState& state, const move_base_msgs::MoveBaseResultConstPtr& result);

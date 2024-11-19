@@ -5,9 +5,13 @@ Explorer::Explorer(ros::NodeHandle& nh)
       tf_listener_(tf_buffer_),
       explorer_vel_pub_(nh.advertise<geometry_msgs::Twist>("explorer/cmd_vel", 100)),
       fiducial_sub_(nh.subscribe("/fiducial_transforms", 100, &Explorer::arucoCallback, this)),
-      sar_bot_(nh_, "explorer", MoveGoal{-4.0, 2.5, 1.0}, [this](){return this->goalReachedCB();})
+      follower_client_(nh_.serviceClient<maximo_coding_test::FollowerGoals>("follower_goals"))
 {
-    follower_client_ = nh_.serviceClient<maximo_coding_test::FollowerGoals>("follower_goals");
+    geometry_msgs::Pose start_pose;
+    start_pose.position.x = -4.0;
+    start_pose.position.y = 2.5;
+    start_pose.orientation.w = 1.0;
+    sar_bot_ = std::make_unique<SARBot>(nh_, "explorer", start_pose, [this](){return this->goalReachedCB();});
 }
 
 bool Explorer::init(std::string param_base, int num_markers) {
@@ -18,7 +22,11 @@ bool Explorer::init(std::string param_base, int num_markers) {
         ROS_ERROR("Parameter %s incorrect size.", (param_base+std::to_string(i)).c_str());
         return false;
         }
-        sar_bot_.setGoal(MoveGoal{coords.at(0), coords.at(1), 1.0});
+        geometry_msgs::Pose pose;
+        pose.position.x = coords.at(0);
+        pose.position.y = coords.at(1);
+        pose.orientation.w = 1.0;
+        sar_bot_->setGoal(pose);
     }
 
     return true;
@@ -28,13 +36,14 @@ void Explorer::spin() {
     ros::Rate loop_rate(10);
     
     while (ros::ok()) {
-        if(!sar_bot_.isGoalRunning() && !sar_bot_.isFinished()) {
+        if(!sar_bot_->isGoalRunning() && !sar_bot_->isFinished()) {
             ROS_INFO("Sending goal for explorer");
-            sar_bot_.sendNextGoal();
+            sar_bot_->sendNextGoal();
         }
 
-        if(sar_bot_.isFinished()) {
-            std::reverse(follower_goals_.goals.begin(), follower_goals_.goals.end());
+        if(sar_bot_->isFinished()) {
+            std::reverse(follower_goals_.marker_frames.begin(), follower_goals_.marker_frames.end());
+            std::reverse(follower_goals_.explorer_frames.begin(), follower_goals_.explorer_frames.end());
             
             ROS_INFO("Exploration complete. Sending Follower");
 
@@ -64,12 +73,7 @@ void Explorer::arucoCallback(const fiducial_msgs::FiducialTransformArray& fiduci
     transformStamped.header.frame_id = "explorer_tf/camera_rgb_optical_frame";
     transformStamped.child_frame_id = "marker_frame";
 
-    // todo: better tolerance method
     transformStamped.transform = fiducials.transforms.front().transform;
-    transformStamped.transform.translation.x /= 2;
-    transformStamped.transform.translation.y /= 2;
-    transformStamped.transform.translation.z /= 2;
-    // ROS_INFO("Broadcasting");
     br.sendTransform(transformStamped);
   }
 }
@@ -80,14 +84,26 @@ void Explorer::goalReachedCB()
     cmd_vel_msg.angular.z = 0.1;
     explorer_vel_pub_.publish(cmd_vel_msg);
 
-    geometry_msgs::TransformStamped transform;
-    while(!listen("marker_frame", transform)) {
-        ROS_INFO("Waiting for marker_frame");
+    geometry_msgs::TransformStamped marker_transform;
+    geometry_msgs::TransformStamped explorer_transform;
+    while(!listen("marker_frame", marker_transform)) {
+        ROS_INFO("Waiting for marker frame");
     }
 
     cmd_vel_msg.angular.z = 0;
     explorer_vel_pub_.publish(cmd_vel_msg);
-    follower_goals_.goals.push_back(transform.transform);
+
+    //todo: wait for robot to stop
+
+    while(!listen("marker_frame", marker_transform)) {
+        ROS_INFO("Confirming marker frame");
+    }
+    while(!listen("explorer_tf/base_link", explorer_transform)) {
+        ROS_INFO("Waiting for explorer frame");
+    }
+
+    follower_goals_.marker_frames.push_back(marker_transform.transform);
+    follower_goals_.explorer_frames.push_back(explorer_transform.transform);
 }
 
 bool Explorer::listen(std::string frame, geometry_msgs::TransformStamped &transformStamped) 

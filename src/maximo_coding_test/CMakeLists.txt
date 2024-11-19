@@ -14,6 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 
+find_package(Eigen3 REQUIRED)
+
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
@@ -31,6 +33,7 @@ generate_messages(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIR}
 )
 
 ## Declare a catkin package
@@ -48,12 +51,25 @@ set (EXPLORER_SOURCES
   include/maximo_coding_test/sar_base.hpp
 )
 
+set (FOLLOWER_SOURCES 
+  src/follower_node.cpp
+  src/follower.cpp
+  src/sar_base.cpp
+  include/maximo_coding_test/follower.hpp
+  include/maximo_coding_test/sar_base.hpp
+)
+
 ## Declare a C++ executable
 add_executable(${PROJECT_NAME}_explorer_node ${EXPLORER_SOURCES})
+add_executable(${PROJECT_NAME}_follower_node ${FOLLOWER_SOURCES})
 
 ## Specify libraries to link the executable target against
 target_link_libraries(${PROJECT_NAME}_explorer_node
   ${catkin_LIBRARIES}
+)
+target_link_libraries(${PROJECT_NAME}_follower_node
+  ${catkin_LIBRARIES}
+  Eigen3::Eigen
 )
 
 

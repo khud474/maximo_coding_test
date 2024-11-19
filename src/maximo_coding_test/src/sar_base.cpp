@@ -1,6 +1,6 @@
 #include "maximo_coding_test/sar_base.hpp"
 
-SARBot::SARBot(ros::NodeHandle& nh, std::string name, MoveGoal start_location, std::function<void(void)> goal_reached_cb) 
+SARBot::SARBot(ros::NodeHandle& nh, std::string name, geometry_msgs::Pose start_location, std::function<void(void)> goal_reached_cb) 
     : finished_(false),  
       goal_sent_(false), 
       goal_reached_cb_(goal_reached_cb),
@@ -49,14 +49,12 @@ void SARBot::sendNextGoal()
                         [](const move_base_msgs::MoveBaseFeedbackConstPtr& feedback){} );
 }
 
-void SARBot::setGoal(MoveGoal goal)
+void SARBot::setGoal(geometry_msgs::Pose goal)
 {
     goals_.push_back(move_base_msgs::MoveBaseGoal{});
     goals_.back().target_pose.header.frame_id = "map";
     goals_.back().target_pose.header.stamp = ros::Time::now();
-    goals_.back().target_pose.pose.position.x = goal.x;
-    goals_.back().target_pose.pose.position.y = goal.y;
-    goals_.back().target_pose.pose.orientation.w = goal.w;
+    goals_.back().target_pose.pose = goal;
 }
 
 
