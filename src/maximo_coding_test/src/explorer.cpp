@@ -68,7 +68,6 @@ void Explorer::arucoCallback(const fiducial_msgs::FiducialTransformArray& fiduci
     static tf2_ros::TransformBroadcaster br;
     geometry_msgs::TransformStamped transformStamped;
 
-    //broadcast the new frame to /tf Topic
     transformStamped.header.stamp = ros::Time::now();
     transformStamped.header.frame_id = "explorer_tf/camera_rgb_optical_frame";
     transformStamped.child_frame_id = "marker_frame";

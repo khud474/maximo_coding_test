@@ -1,0 +1,35 @@
+@startuml sequence 
+participant "Paramater Server" as ps
+participant "Aruco Node" as an
+participant "Explorer Bot" as explorer
+participant "Move Base" as mb
+participant "Follower Bot" as follower
+
+loop
+    explorer->ps: request aruco location
+    ps->explorer: send aruco location
+    explorer->explorer: save location
+end
+
+loop while unvisited locations
+    explorer->mb: go to location
+    mb->explorer: complete
+    explorer->explorer: rotate
+    an -> explorer: transform from camera to aruco marker
+    explorer->explorer: save transform from map to aruco marker
+    explorer->explorer: save transform from map to self
+end
+
+explorer->mb: go to start location
+mb->explorer :complete
+explorer->follower: send saved transforms
+follower->follower: offset aruco markers to approach location
+
+loop while unvisited aruco markers
+    follower->mb: go to marker
+    mb->follower: complete
+end
+follower->mb: go to start location
+mb->follower: complete
+
+@enduml

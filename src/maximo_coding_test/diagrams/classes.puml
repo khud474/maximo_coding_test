@@ -1,0 +1,51 @@
+@startuml classes
+    class "SAR Base" as sar {
+        {field} -std::atomic<bool> goal_sent_
+        {field} -std::atomic<bool> finished_
+        {field} -std::function<void(void)> goal_reached_cb_
+        {field} -MoveBaseClient move_client_
+        {field} -ros::NodHandle nh_
+        {field} -std::mutex send_goal_m_
+        {field} -std::vector<move_base_msgs::MoveBaseGoal> goals_
+
+        {method} +SARBot(ros::NodeHandle& nh, std::string name, geometry_msgs::Pose start_location, std::function<void(void)> goal_reached_cb)
+        {method} +bool isGoalRunning()
+        {method} +bool isFinished()
+        {method} +void sendNextGoal()
+        {method} +void setGoal()
+        {method} -void doneCB(const actionlib::SimpleClientGoalState& state, const move_base_msgs::MoveBaseResultConstPtr& result)
+    }
+
+    class "Explorer Bot" as explorer {
+        {field} -maximo_coding_test::FollowerGoalsRequest follower_goals_
+        {field} -ros::NodeHandle nh_
+        {field} -ros::Publisher explorer_vel_pub_
+        {field} -ros::ServiceClient follower_client_
+        {field} -ros::Subscriber fiducial_sub_
+        {field} -std::unique_ptr<SARBot> sar_bot_
+        {field} -tf2_ros::Buffer tf_buffer_
+        {field} -tf2_ros::TransformListener tf_listener_
+
+        {method} +Explorer(ros::NodeHandle& nh)
+        {method} +bool init(std::string param_base, int num_markers)
+        {method} +void spin()
+        {method} -void arucoCallback(const fiducial_msgs::FiducialTransformArray& fiducials)
+        {method} -void goalReachedCB()
+        {method} -bool listen(std::string frame, geometry_msgs::TransformStamped &transformStamped)
+
+    }
+    class "Follower Bot" as follower {
+        {field} -double target_distance_
+        {field} -std::atomic<bool> goals_received_
+        {field} -ros::NodeHandle nh_
+        {field} -ros::ServiceServer follower_goals_service_
+        {field} -std::unique_ptr<SARBot> sar_bot_
+
+        {method} +Follower(ros::NodeHandle& nh, double target_distance)
+        {method} +void spin()
+        {method} -bool getGoals(maximo_coding_test::FollowerGoalsRequest& req, maximo_coding_test::FollowerGoalsResponse& resp)
+    }
+
+    explorer o-- sar
+    follower o-- sar
+@enduml
